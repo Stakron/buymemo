@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "498901186900",
+    "project_id": "buymemo-f6181",
+    "storage_bucket": "buymemo-f6181.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:498901186900:android:97b2d2ad163f8beb5470c1",
+        "android_client_info": {
+          "package_name": "com.buymemo.shoppingmemo"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBMDgBr-haRu-U-5VwaVmhmZFUFiSd6llk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

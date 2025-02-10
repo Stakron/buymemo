@@ -1,0 +1,8 @@
+{
+  "projects": {
+    "buymemo-prod": "buymemo-f6181",
+    "default": "buymemo-f6181"
+  },
+  "targets": {},
+  "etags": {}
+}

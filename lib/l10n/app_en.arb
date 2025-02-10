@@ -1,0 +1,12 @@
+{
+  "title": "Options",
+  "addNewCategory": "Add New Category",
+  "addItemToCategory": "Add Item to Category",
+  "removeCategory": "Remove Category",
+  "todayShopping": "Today's Shopping",
+  "usualList": "Usual List",
+  "deleteConfirmation": "Delete Confirmation",
+  "deleteWarning": "Once deleted, it cannot be undone. Do you really want to delete {category}?",
+  "cancel": "Cancel",
+  "delete": "Delete"
+}

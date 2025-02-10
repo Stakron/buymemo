@@ -1,0 +1,12 @@
+{
+  "title": "Opciones",
+  "addNewCategory": "Agregar nueva categoría",
+  "addItemToCategory": "Agregar artículo a la categoría",
+  "removeCategory": "Eliminar Categoría",
+  "todayShopping": "Compras de hoy",
+  "usualList": "Lista habitual",
+  "deleteConfirmation": "Confirmación de eliminación",
+  "deleteWarning": "Una vez eliminado, no se puede deshacer. ¿Realmente desea eliminar {category}?",
+  "cancel": "Cancelar",
+  "delete": "Eliminar"
+}

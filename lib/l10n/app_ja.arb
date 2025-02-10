@@ -1,0 +1,12 @@
+{
+  "title": "オプション",
+  "addNewCategory": "新しいカテゴリを追加",
+  "addItemToCategory": "カテゴリにアイテムを追加",
+  "removeCategory": "カテゴリを削除",
+  "todayShopping": "本日の買い物",
+  "usualList": "いつものリスト",
+  "deleteConfirmation": "削除確認",
+  "deleteWarning": "一度削除すると戻せません。{category}を本当に削除しますか？",
+  "cancel": "キャンセル",
+  "delete": "削除"
+}

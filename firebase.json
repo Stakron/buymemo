@@ -1,0 +1,42 @@
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "buymemo-f6181",
+          "appId": "1:498901186900:android:97b2d2ad163f8beb5470c1",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "buymemo-f6181",
+          "configurations": {
+            "android": "1:498901186900:android:97b2d2ad163f8beb5470c1",
+            "ios": "1:498901186900:ios:6f7eec8db84c45a35470c1",
+            "macos": "1:498901186900:ios:6f7eec8db84c45a35470c1",
+            "web": "1:498901186900:web:933ee4fb9880dc655470c1",
+            "windows": "1:498901186900:web:73b9d846f27026445470c1"
+          }
+        }
+      }
+    }
+  },
+  "functions": {
+    "source": "functions"
+  },
+  "hosting": {
+    "public": "public",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}
