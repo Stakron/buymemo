@@ -1,12 +1,13 @@
+import 'dart:convert';
+
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert';
-import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
 
+import 'firebase_options.dart';
 
 const List<String> initialCategories = [
   '野菜',
@@ -20,7 +21,6 @@ const List<String> initialCategories = [
   'お菓子',
   'その他'
 ];
-
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -39,15 +39,17 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-        localizationsDelegates: [
-          AppLocalizations.delegate,
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate, ],
-        supportedLocales: [ const Locale('en', ''), // 英語
-                            const Locale('ja', ''), // 日本語
-                            const Locale('es', ''), // スペイン語
-    ],
+      localizationsDelegates: [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: [
+        const Locale('en', ''), // 英語
+        const Locale('ja', ''), // 日本語
+        const Locale('es', ''), // スペイン語
+      ],
       home: ShoppingListScreen(),
     );
   }
@@ -58,8 +60,8 @@ class ShoppingListScreen extends StatefulWidget {
   _ShoppingListScreenState createState() => _ShoppingListScreenState();
 }
 
-class _ShoppingListScreenState extends State<ShoppingListScreen> {
-
+class _ShoppingListScreenState extends State<ShoppingListScreen>
+    with TickerProviderStateMixin {
   final List<String> _dailyShoppingList = [];
   final List<String> _generalShoppingList = [];
   final List<String> _categoryNames = [
@@ -93,7 +95,19 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
     '魚': ['さんま', 'しゃけ', 'さば'],
     '乳製品': ['牛乳', 'チーズ', 'ヨーグルト'],
     '豆': ['納豆', '豆腐', '豆乳'],
-    '調味料': ['油','しょうゆ','さとう','酒','みりん','鶏ガラ','昆布','白だし','酒','ごま油','ポン酢'],
+    '調味料': [
+      '油',
+      'しょうゆ',
+      'さとう',
+      '酒',
+      'みりん',
+      '鶏ガラ',
+      '昆布',
+      '白だし',
+      '酒',
+      'ごま油',
+      'ポン酢'
+    ],
     '練り物': ['はんぺん', 'ごぼう天', '平天'],
     '穀物': ['米', 'パン', '中華そば', 'うどん', 'そば'],
     'お菓子': ['ポテトチップス', 'コカコーラ', 'じゃがりこ'],
@@ -102,12 +116,14 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
   final Set<String> _crossedOutItems = {};
   late BannerAd _bannerAd;
   bool _isBannerAdReady = false;
-  //late TabController _tabController;
+  late TabController _generalTabController;
 
   @override
   void initState() {
     super.initState();
     _loadData();
+    _generalTabController =
+        TabController(length: _categoryNames.length, vsync: this);
     _bannerAd = BannerAd(
       adUnitId: 'ca-app-pub-6562846915003119/3030250417',
       // Replace with your actual Ad Unit ID
@@ -126,27 +142,28 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
           ad.dispose();
         },
       ),
-    )
-    ..load();
-    //_tabController = TabController(length: _categoryNames.length, vsync: this); // 初期化
+    )..load();
   }
 
   Future<void> _loadData() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
-      _dailyShoppingList.addAll((prefs.getStringList('dailyShoppingList') ?? []).map((e) => e));
-      _generalShoppingList.addAll((prefs.getStringList('generalShoppingList') ?? []).map((e) => e));
+      _dailyShoppingList.addAll(
+          (prefs.getStringList('dailyShoppingList') ?? []).map((e) => e));
+      _generalShoppingList.addAll(
+          (prefs.getStringList('generalShoppingList') ?? []).map((e) => e));
       _categoryNames.clear();
-      _categoryNames.addAll(prefs.getStringList('categoryNames') ?? initialCategories);
+      _categoryNames
+          .addAll(prefs.getStringList('categoryNames') ?? initialCategories);
       final categoryListsJson = prefs.getString('categoryLists') ?? '{}';
-      final decodedCategoryLists = json.decode(categoryListsJson) as Map<String, dynamic>;
+      final decodedCategoryLists =
+          json.decode(categoryListsJson) as Map<String, dynamic>;
       decodedCategoryLists.forEach((key, value) {
-        _categoryLists[key] = (value as List<dynamic>).map((e) => e as String).toList();
+        _categoryLists[key] =
+            (value as List<dynamic>).map((e) => e as String).toList();
       });
-      //_tabController = TabController(length: _categoryNames.length, vsync: this); // 再初期化
     });
   }
-
 
   Future<void> _saveData() async {
     final prefs = await SharedPreferences.getInstance();
@@ -156,16 +173,13 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
     await prefs.setString('categoryLists', json.encode(_categoryLists));
   }
 
-
   @override
   void dispose() {
     _bannerAd.dispose();
-    //_tabController.dispose(); // TabController を解放
+    _generalTabController.dispose();
     super.dispose();
   }
 
-  //The following assertion was thrown while finalizing the widget tree:
-  //Multiple widgets used the same GlobalKey.
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -212,7 +226,6 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
     );
   }
 
-
   Widget _buildShoppingList(List<String> shoppingList) {
     return ListView.builder(
       itemCount: shoppingList.length,
@@ -221,11 +234,12 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
         final crossedOut = _crossedOutItems.contains(item);
         return ListTile(
           title: Text(
-            item, style: TextStyle( decoration: crossedOut
-              ? TextDecoration.lineThrough
-              : TextDecoration.none,
-            color: crossedOut ? Colors.grey : Colors.black,
-          ),
+            item,
+            style: TextStyle(
+              decoration:
+                  crossedOut ? TextDecoration.lineThrough : TextDecoration.none,
+              color: crossedOut ? Colors.grey : Colors.black,
+            ),
           ),
           trailing: IconButton(
             icon: Icon(Icons.delete),
@@ -233,10 +247,12 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
               setState(() {
                 if (crossedOut) {
                   shoppingList.removeAt(index);
-                } else { _crossedOutItems.add(item);
-                } _saveData();
+                } else {
+                  _crossedOutItems.add(item);
+                }
+                _saveData();
               });
-              },
+            },
           ),
           onLongPress: () {
             setState(() {
@@ -244,38 +260,35 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
               _crossedOutItems.remove(item);
               _saveData();
             });
-            },
+          },
         );
-        },
+      },
     );
   }
-
 
   Widget _buildGeneralTabBar() {
-    return DefaultTabController(
-      length: _categoryNames.length,
-      child: Column(
-        children: [
-          TabBar(
-            isScrollable: true,
-            tabs: _categoryNames.map((category) => Tab(text: category, key: Key(category))).toList(),
+    return Column(
+      children: [
+        TabBar(
+          controller: _generalTabController,
+          isScrollable: true,
+          tabs: _categoryNames.map((category) => Tab(text: category)).toList(),
+        ),
+        Expanded(
+          child: TabBarView(
+            controller: _generalTabController,
+            children: _categoryNames.map((category) {
+              return _buildCategoryList(
+                  _categoryLists[category]!, _dailyShoppingList);
+            }).toList(),
           ),
-          Expanded(
-            child: TabBarView(
-              children: _categoryNames.map((category) {
-                return _buildCategoryList(_categoryLists[category]!, _dailyShoppingList);
-              }).toList(),
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
-
-
-
-  Widget _buildCategoryList(List<String> categoryList, List<String> targetList) {
+  Widget _buildCategoryList(
+      List<String> categoryList, List<String> targetList) {
     return ReorderableListView(
       onReorder: (int oldIndex, int newIndex) {
         setState(() {
@@ -290,7 +303,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
       children: List.generate(categoryList.length, (index) {
         final item = categoryList[index];
         return ListTile(
-          key: Key('$item$index'),  // 一意のキーを設定
+          key: Key('$item$index'), // 一意のキーを設定
           title: Text(item),
           trailing: IconButton(
             icon: Icon(Icons.delete),
@@ -315,7 +328,6 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
       }),
     );
   }
-
 
   void _showRemoveCategoryDialog() {
     showDialog(
@@ -371,7 +383,6 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
     );
   }
 
-
   void _deleteCategory(String category) {
     setState(() {
       _categoryNames.remove(category);
@@ -379,8 +390,6 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
       _saveData();
     });
   }
-
-
 
   void _showAddOptionsDialog() {
     showDialog(
@@ -421,8 +430,6 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
     );
   }
 
-
-
   void _showAddCategoryDialog() {
     showDialog(
       context: context,
@@ -433,27 +440,29 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
           content: TextField(
             onChanged: (value) {
               newCategory = value;
-              },
-            decoration: InputDecoration(hintText: AppLocalizations.of(context)!.addNewCategory),
+            },
+            decoration: InputDecoration(
+                hintText: AppLocalizations.of(context)!.addNewCategory),
           ),
           actions: <Widget>[
             TextButton(
               child: Text('Cancel'),
               onPressed: () {
                 Navigator.of(context).pop();
-                },
+              },
             ),
             TextButton(
               child: Text('Add'),
               onPressed: () {
                 if (newCategory.isNotEmpty) {
-                  _addCategory(newCategory); }
+                  _addCategory(newCategory);
+                }
                 Navigator.of(context).pop();
-                },
+              },
             ),
           ],
         );
-        },
+      },
     );
   }
 
@@ -462,13 +471,14 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
       setState(() {
         _categoryNames.add(newCategory);
         _categoryLists[newCategory] = [];
-        //_tabController.dispose(); // 既存のTabControllerを破棄
-        //_tabController = TabController(length: _categoryNames.length, vsync: this); // 新しいTabControllerを初期化
+        _generalTabController.dispose();
+        _generalTabController = TabController(
+          length: _categoryNames.length,
+          vsync: this,
+          initialIndex: _categoryNames.length - 1,
+        );
         _saveData();
       });
-      /*WidgetsBinding.instance.addPostFrameCallback((_) {
-        _tabController.animateTo(_categoryNames.length - 1); // 新しいカテゴリに遷移
-      });*/
     } else {
       showDialog(
         context: context,
@@ -490,14 +500,10 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
     }
   }
 
-
-
-
-
-
   void _showAddItemToCategoryDialog() {
     TextEditingController itemController = TextEditingController();
-    String selectedCategory = _categoryNames.isNotEmpty ? _categoryNames[0] : '';
+    String selectedCategory =
+        _categoryNames.isNotEmpty ? _categoryNames[0] : '';
 
     showDialog(
       context: context,
@@ -510,13 +516,15 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   DropdownButton<String>(
-                    value: selectedCategory.isNotEmpty ? selectedCategory : null,
+                    value:
+                        selectedCategory.isNotEmpty ? selectedCategory : null,
                     onChanged: (String? value) {
                       setState(() {
                         selectedCategory = value!;
                       });
                     },
-                    items: _categoryNames.map<DropdownMenuItem<String>>((String category) {
+                    items: _categoryNames
+                        .map<DropdownMenuItem<String>>((String category) {
                       return DropdownMenuItem<String>(
                         value: category,
                         child: Text(category),
@@ -540,7 +548,8 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                   onPressed: () {
                     if (itemController.text.isNotEmpty) {
                       setState(() {
-                        _categoryLists[selectedCategory]!.add(itemController.text);
+                        _categoryLists[selectedCategory]!
+                            .add(itemController.text);
                         _saveData();
                       });
                       Navigator.of(context).pop();
@@ -556,7 +565,3 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
     );
   }
 }
-
-
-
-
