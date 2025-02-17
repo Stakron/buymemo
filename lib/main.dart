@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math' as math;
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -117,11 +118,13 @@ class _ShoppingListScreenState extends State<ShoppingListScreen>
   late BannerAd _bannerAd;
   bool _isBannerAdReady = false;
   late TabController _generalTabController;
+  late TabController _mainTabController;
 
   @override
   void initState() {
     super.initState();
     _loadData();
+    _mainTabController = TabController(length: 2, vsync: this);
     _generalTabController =
         TabController(length: _categoryNames.length, vsync: this);
     _bannerAd = BannerAd(
@@ -177,6 +180,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen>
   void dispose() {
     _bannerAd.dispose();
     _generalTabController.dispose();
+    _mainTabController.dispose();
     super.dispose();
   }
 
@@ -267,6 +271,14 @@ class _ShoppingListScreenState extends State<ShoppingListScreen>
   }
 
   Widget _buildGeneralTabBar() {
+    if (_generalTabController.length != _categoryNames.length) {
+      _generalTabController.dispose();
+      _generalTabController = TabController(
+        length: _categoryNames.length,
+        vsync: this,
+      );
+    }
+
     return Column(
       children: [
         TabBar(
@@ -387,6 +399,19 @@ class _ShoppingListScreenState extends State<ShoppingListScreen>
     setState(() {
       _categoryNames.remove(category);
       _categoryLists.remove(category);
+    });
+
+    // UIの更新を確実に行うため、遅延実行
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      setState(() {
+        _generalTabController.dispose();
+        _generalTabController = TabController(
+          length: _categoryNames.length,
+          vsync: this,
+          initialIndex: math.min(_categoryNames.length - 1, 0),
+        );
+      });
+
       _saveData();
     });
   }
@@ -468,16 +493,47 @@ class _ShoppingListScreenState extends State<ShoppingListScreen>
 
   void _addCategory(String newCategory) {
     if (!_categoryNames.contains(newCategory)) {
+      // まずカテゴリーを追加
       setState(() {
         _categoryNames.add(newCategory);
         _categoryLists[newCategory] = [];
-        _generalTabController.dispose();
-        _generalTabController = TabController(
-          length: _categoryNames.length,
-          vsync: this,
-          initialIndex: _categoryNames.length - 1,
-        );
         _saveData();
+      });
+
+      // メインタブを"いつものリスト"に切り替え
+      _mainTabController.index = 1;
+
+      // UIの更新を確実に行うため、遅延実行
+      Future.delayed(Duration(milliseconds: 100), () {
+        if (!mounted) return;
+
+        setState(() {
+          // 新しいTabControllerを作成
+          _generalTabController.dispose();
+          _generalTabController = TabController(
+            length: _categoryNames.length,
+            vsync: this,
+          );
+        });
+
+        // さらに遅延を入れて新しいカテゴリーに遷移
+        Future.delayed(Duration(milliseconds: 100), () {
+          if (!mounted) return;
+
+          setState(() {
+            // 新しいカテゴリーに遷移
+            _generalTabController.index = _categoryNames.length - 1;
+          });
+
+          // 遷移が確実に行われるようにもう一度インデックスを設定
+          Future.delayed(Duration(milliseconds: 50), () {
+            if (!mounted) return;
+
+            setState(() {
+              _generalTabController.index = _categoryNames.length - 1;
+            });
+          });
+        });
       });
     } else {
       showDialog(
@@ -502,8 +558,8 @@ class _ShoppingListScreenState extends State<ShoppingListScreen>
 
   void _showAddItemToCategoryDialog() {
     TextEditingController itemController = TextEditingController();
-    String selectedCategory =
-        _categoryNames.isNotEmpty ? _categoryNames[0] : '';
+    // 現在選択されているカテゴリーを取得
+    String selectedCategory = _categoryNames[_generalTabController.index];
 
     showDialog(
       context: context,
@@ -516,8 +572,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen>
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   DropdownButton<String>(
-                    value:
-                        selectedCategory.isNotEmpty ? selectedCategory : null,
+                    value: selectedCategory,
                     onChanged: (String? value) {
                       setState(() {
                         selectedCategory = value!;
