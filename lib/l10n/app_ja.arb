@@ -8,5 +8,6 @@
   "deleteConfirmation": "削除確認",
   "deleteWarning": "一度削除すると戻せません。{category}を本当に削除しますか？",
   "cancel": "キャンセル",
-  "delete": "削除"
+  "delete": "削除",
+  "reorderCategories": "カテゴリーの並び替え"
 }

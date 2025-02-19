@@ -416,6 +416,59 @@ class _ShoppingListScreenState extends State<ShoppingListScreen>
     });
   }
 
+  void _showReorderCategoriesDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(AppLocalizations.of(context)!.reorderCategories),
+          content: Container(
+            width: double.maxFinite,
+            child: StatefulBuilder(
+              builder: (BuildContext context, StateSetter setState) {
+                return ReorderableListView(
+                  onReorder: (int oldIndex, int newIndex) {
+                    setState(() {
+                      if (newIndex > oldIndex) {
+                        newIndex -= 1;
+                      }
+                      final String item = _categoryNames.removeAt(oldIndex);
+                      _categoryNames.insert(newIndex, item);
+
+                      // カテゴリーリストの順序も更新
+                      final List<String> categoryItems =
+                          _categoryLists.remove(item)!;
+                      _categoryLists[item] = categoryItems;
+                      _saveData();
+
+                      // 親ウィジェットの状態を更新して即時反映
+                      this.setState(() {});
+                    });
+                  },
+                  children: List.generate(_categoryNames.length, (index) {
+                    final category = _categoryNames[index];
+                    return ListTile(
+                      key: Key('$category$index'), // 一意のキーを設定
+                      title: Text(category),
+                    );
+                  }),
+                );
+              },
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Close'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void _showAddOptionsDialog() {
     showDialog(
       context: context,
@@ -445,6 +498,14 @@ class _ShoppingListScreenState extends State<ShoppingListScreen>
                   onTap: () {
                     Navigator.of(context).pop();
                     _showRemoveCategoryDialog();
+                  },
+                ),
+                ListTile(
+                  title: Text(AppLocalizations.of(context)!
+                      .reorderCategories), // 新しいオプションを追加
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    _showReorderCategoriesDialog();
                   },
                 ),
               ],
@@ -493,7 +554,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen>
 
   void _addCategory(String newCategory) {
     if (!_categoryNames.contains(newCategory)) {
-      // まずカテゴリーを追加
+      // カテゴリーを追加
       setState(() {
         _categoryNames.add(newCategory);
         _categoryLists[newCategory] = [];
@@ -504,35 +565,21 @@ class _ShoppingListScreenState extends State<ShoppingListScreen>
       _mainTabController.index = 1;
 
       // UIの更新を確実に行うため、遅延実行
-      Future.delayed(Duration(milliseconds: 100), () {
-        if (!mounted) return;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        // 新しいTabControllerを作成
+        _generalTabController.dispose();
+        _generalTabController = TabController(
+          length: _categoryNames.length,
+          vsync: this,
+        );
 
-        setState(() {
-          // 新しいTabControllerを作成
-          _generalTabController.dispose();
-          _generalTabController = TabController(
-            length: _categoryNames.length,
-            vsync: this,
-          );
-        });
-
-        // さらに遅延を入れて新しいカテゴリーに遷移
+        // 新しいカテゴリーに遷移
         Future.delayed(Duration(milliseconds: 100), () {
-          if (!mounted) return;
-
-          setState(() {
-            // 新しいカテゴリーに遷移
-            _generalTabController.index = _categoryNames.length - 1;
-          });
-
-          // 遷移が確実に行われるようにもう一度インデックスを設定
-          Future.delayed(Duration(milliseconds: 50), () {
-            if (!mounted) return;
-
+          if (mounted) {
             setState(() {
               _generalTabController.index = _categoryNames.length - 1;
             });
-          });
+          }
         });
       });
     } else {
@@ -608,6 +655,8 @@ class _ShoppingListScreenState extends State<ShoppingListScreen>
                         _saveData();
                       });
                       Navigator.of(context).pop();
+                      // UIを更新して即時反映
+                      this.setState(() {});
                     }
                   },
                   child: Text('Add'),

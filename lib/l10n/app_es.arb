@@ -8,5 +8,6 @@
   "deleteConfirmation": "Confirmación de eliminación",
   "deleteWarning": "Una vez eliminado, no se puede deshacer. ¿Realmente desea eliminar {category}?",
   "cancel": "Cancelar",
-  "delete": "Eliminar"
+  "delete": "Eliminar",
+  "reorderCategories": "Reordenar categorías"
 }

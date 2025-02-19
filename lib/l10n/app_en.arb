@@ -8,5 +8,6 @@
   "deleteConfirmation": "Delete Confirmation",
   "deleteWarning": "Once deleted, it cannot be undone. Do you really want to delete {category}?",
   "cancel": "Cancel",
-  "delete": "Delete"
+  "delete": "Delete",
+  "reorderCategories": "Reorder Categories"
 }
