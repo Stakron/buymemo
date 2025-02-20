@@ -1,0 +1,2 @@
+C:/Users/taker/AndroidStudioProjects/ShoppingMemo/android/app/.cxx/RelWithDebInfo/492g4w71/armeabi-v7a/CMakeFiles/edit_cache.dir
+C:/Users/taker/AndroidStudioProjects/ShoppingMemo/android/app/.cxx/RelWithDebInfo/492g4w71/armeabi-v7a/CMakeFiles/rebuild_cache.dir

@@ -1,0 +1,1 @@
+C:\Users\taker\AndroidStudioProjects\ShoppingMemo\build\app\intermediates\cxx\Debug\4h67193d\obj\arm64-v8a

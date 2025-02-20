@@ -1,7 +1,7 @@
 {
   "title": "Options",
   "addNewCategory": "Add New Category",
-  "addItemToCategory": "Add Item to Category",
+  "addItemToCategory": "Add Item",
   "removeCategory": "Remove Category",
   "todayShopping": "Today's Shopping",
   "usualList": "Usual List",
@@ -9,5 +9,9 @@
   "deleteWarning": "Once deleted, it cannot be undone. Do you really want to delete {category}?",
   "cancel": "Cancel",
   "delete": "Delete",
-  "reorderCategories": "Reorder Categories"
+  "reorderCategories": "Reorder Categories",
+  "categoryExistsTitle": "Category Already Exists",
+  "categoryExistsMessage": "{category} is already in the list.",
+  "add":"add"
+  
 }

@@ -1,0 +1,1 @@
+C:\Users\taker\AndroidStudioProjects\ShoppingMemo\build\app\intermediates\cxx\RelWithDebInfo\492g4w71\obj\x86_64

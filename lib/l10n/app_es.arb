@@ -1,7 +1,7 @@
 {
   "title": "Opciones",
   "addNewCategory": "Agregar nueva categoría",
-  "addItemToCategory": "Agregar artículo a la categoría",
+  "addItemToCategory": "Agregar artículo",
   "removeCategory": "Eliminar Categoría",
   "todayShopping": "Compras de hoy",
   "usualList": "Lista habitual",
@@ -9,5 +9,8 @@
   "deleteWarning": "Una vez eliminado, no se puede deshacer. ¿Realmente desea eliminar {category}?",
   "cancel": "Cancelar",
   "delete": "Eliminar",
-  "reorderCategories": "Reordenar categorías"
+  "reorderCategories": "Reordenar categorías",
+  "categoryExistsTitle": "La categoría ya existe",
+  "categoryExistsMessage": "{category} ya está en la lista.",
+  "add":"Agregar"
 }

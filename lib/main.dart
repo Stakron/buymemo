@@ -216,57 +216,80 @@ class _ShoppingListScreenState extends State<ShoppingListScreen>
                     ],
                   ),
                 ),
-                if (_isBannerAdReady)
-                  Container(
-                    width: MediaQuery.of(context).size.width,
-                    height: _bannerAd.size.height.toDouble(),
-                    child: AdWidget(ad: _bannerAd),
-                  ),
               ],
             ),
+            if (_isBannerAdReady)
+              Positioned(
+                bottom: MediaQuery.of(context).padding.bottom +
+                    _getNavigationBarHeight(context),
+                left: 0,
+                right: 0,
+                child: Container(
+                  width: MediaQuery.of(context).size.width,
+                  height: _bannerAd.size.height.toDouble(),
+                  child: AdWidget(ad: _bannerAd),
+                ),
+              ),
           ],
         ),
       ),
     );
   }
 
+  double _getNavigationBarHeight(BuildContext context) {
+    // ナビゲーションバーの高さを取得（デバイスごとに調整）
+    var navigationBarHeight = MediaQuery.of(context).padding.bottom;
+    if (navigationBarHeight == 0) {
+      // 3-button navigationの場合
+      return kBottomNavigationBarHeight;
+    } else {
+      // Gesture navigationの場合
+      return 0;
+    }
+  }
+
   Widget _buildShoppingList(List<String> shoppingList) {
-    return ListView.builder(
-      itemCount: shoppingList.length,
-      itemBuilder: (context, index) {
-        final item = shoppingList[index];
-        final crossedOut = _crossedOutItems.contains(item);
-        return ListTile(
-          title: Text(
-            item,
-            style: TextStyle(
-              decoration:
-                  crossedOut ? TextDecoration.lineThrough : TextDecoration.none,
-              color: crossedOut ? Colors.grey : Colors.black,
-            ),
-          ),
-          trailing: IconButton(
-            icon: Icon(Icons.delete),
-            onPressed: () {
-              setState(() {
-                if (crossedOut) {
+    return Stack(
+      children: [
+        ListView.builder(
+          itemCount: shoppingList.length,
+          itemBuilder: (context, index) {
+            final item = shoppingList[index];
+            final crossedOut = _crossedOutItems.contains(item);
+            return ListTile(
+              title: Text(
+                item,
+                style: TextStyle(
+                  decoration: crossedOut
+                      ? TextDecoration.lineThrough
+                      : TextDecoration.none,
+                  color: crossedOut ? Colors.grey : Colors.black,
+                ),
+              ),
+              trailing: IconButton(
+                icon: Icon(Icons.delete),
+                onPressed: () {
+                  setState(() {
+                    if (crossedOut) {
+                      shoppingList.removeAt(index);
+                    } else {
+                      _crossedOutItems.add(item);
+                    }
+                    _saveData();
+                  });
+                },
+              ),
+              onLongPress: () {
+                setState(() {
                   shoppingList.removeAt(index);
-                } else {
-                  _crossedOutItems.add(item);
-                }
-                _saveData();
-              });
-            },
-          ),
-          onLongPress: () {
-            setState(() {
-              shoppingList.removeAt(index);
-              _crossedOutItems.remove(item);
-              _saveData();
-            });
+                  _crossedOutItems.remove(item);
+                  _saveData();
+                });
+              },
+            );
           },
-        );
-      },
+        ),
+      ],
     );
   }
 
@@ -542,6 +565,10 @@ class _ShoppingListScreenState extends State<ShoppingListScreen>
               onPressed: () {
                 if (newCategory.isNotEmpty) {
                   _addCategory(newCategory);
+                  // "いつものリスト"タブに切り替え
+                  _mainTabController.index = 1;
+                  // 新しいカテゴリーに遷移
+                  _navigateToCategory(newCategory);
                 }
                 Navigator.of(context).pop();
               },
@@ -552,6 +579,16 @@ class _ShoppingListScreenState extends State<ShoppingListScreen>
     );
   }
 
+  void _navigateToCategory(String category) {
+    // 新しいカテゴリーのインデックスを取得
+    int categoryIndex = _categoryNames.indexOf(category);
+    if (categoryIndex != -1 && categoryIndex < _generalTabController.length) {
+      // タブを切り替え
+      _generalTabController.index = categoryIndex;
+      setState(() {}); // UIを更新
+    }
+  }
+
   void _addCategory(String newCategory) {
     if (!_categoryNames.contains(newCategory)) {
       // カテゴリーを追加
@@ -559,48 +596,54 @@ class _ShoppingListScreenState extends State<ShoppingListScreen>
         _categoryNames.add(newCategory);
         _categoryLists[newCategory] = [];
         _saveData();
-      });
 
-      // メインタブを"いつものリスト"に切り替え
-      _mainTabController.index = 1;
-
-      // UIの更新を確実に行うため、遅延実行
-      WidgetsBinding.instance.addPostFrameCallback((_) {
         // 新しいTabControllerを作成
-        _generalTabController.dispose();
+        _generalTabController.dispose(); // 既存のTabControllerを破棄
         _generalTabController = TabController(
           length: _categoryNames.length,
           vsync: this,
+          initialIndex: _categoryNames.length - 1, // 新しいカテゴリーに遷移
         );
 
+        // タブを切り替え
+        _mainTabController.index = 1; // "いつものリスト"タブに切り替え
+        print(
+            'Switching to "Usual List" tab and navigating to category: $newCategory'); // デバッグ用出力
         // 新しいカテゴリーに遷移
-        Future.delayed(Duration(milliseconds: 100), () {
-          if (mounted) {
-            setState(() {
-              _generalTabController.index = _categoryNames.length - 1;
-            });
-          }
-        });
+        _navigateToCategory(newCategory);
       });
     } else {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text('Category Already Exists'),
-            content: Text('$newCategory is already in the list.'),
-            actions: <Widget>[
-              TextButton(
-                child: Text('OK'),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          );
-        },
-      );
+      // カテゴリーが既に存在する場合の処理
+      Future.delayed(Duration.zero, () {
+        _showCategoryExistsDialog(newCategory);
+      });
     }
+  }
+
+  void _showCategoryExistsDialog(String category) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        // ローカライズされたメッセージを取得
+        String message = AppLocalizations.of(context)!
+            .categoryExistsMessage(category); // 関数を呼び出す
+
+        return AlertDialog(
+          title: Text(AppLocalizations.of(context)!
+              .categoryExistsTitle), // ローカライズされたタイトル
+          content: Text(message), // ローカライズされたメッセージ
+          actions: <Widget>[
+            TextButton(
+              child: Text(
+                  AppLocalizations.of(context)!.cancel), // ローカライズされたキャンセルボタン
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void _showAddItemToCategoryDialog() {
@@ -611,18 +654,19 @@ class _ShoppingListScreenState extends State<ShoppingListScreen>
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return StatefulBuilder(
-          builder: (BuildContext context, StateSetter setState) {
-            return AlertDialog(
-              title: Text('Add Item to Category'),
-              content: Column(
+        return AlertDialog(
+          title:
+              Text(AppLocalizations.of(context)!.addItemToCategory), // ローカライズ
+          content: StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+              return Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   DropdownButton<String>(
                     value: selectedCategory,
                     onChanged: (String? value) {
                       setState(() {
-                        selectedCategory = value!;
+                        selectedCategory = value!; // 選択されたカテゴリーを更新
                       });
                     },
                     items: _categoryNames
@@ -635,35 +679,35 @@ class _ShoppingListScreenState extends State<ShoppingListScreen>
                   ),
                   TextField(
                     controller: itemController,
-                    decoration: InputDecoration(hintText: 'Enter item name'),
+                    decoration: InputDecoration(
+                        hintText: AppLocalizations.of(context)!
+                            .addItemToCategory), // ローカライズ
                   ),
                 ],
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: Text('Cancel'),
-                ),
-                TextButton(
-                  onPressed: () {
-                    if (itemController.text.isNotEmpty) {
-                      setState(() {
-                        _categoryLists[selectedCategory]!
-                            .add(itemController.text);
-                        _saveData();
-                      });
-                      Navigator.of(context).pop();
-                      // UIを更新して即時反映
-                      this.setState(() {});
-                    }
-                  },
-                  child: Text('Add'),
-                ),
-              ],
-            );
-          },
+              );
+            },
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text(AppLocalizations.of(context)!.cancel), // ローカライズ
+            ),
+            TextButton(
+              onPressed: () {
+                if (itemController.text.isNotEmpty) {
+                  setState(() {
+                    _categoryLists[selectedCategory]!.add(itemController.text);
+                    _saveData(); // データを保存
+                    _navigateToCategory(selectedCategory); // カテゴリーに遷移
+                  });
+                  Navigator.of(context).pop();
+                }
+              },
+              child: Text(AppLocalizations.of(context)!.add), // ローカライズ
+            ),
+          ],
         );
       },
     );

@@ -1,7 +1,7 @@
 {
   "title": "オプション",
   "addNewCategory": "新しいカテゴリを追加",
-  "addItemToCategory": "カテゴリにアイテムを追加",
+  "addItemToCategory": "アイテムを追加",
   "removeCategory": "カテゴリを削除",
   "todayShopping": "本日の買い物",
   "usualList": "いつものリスト",
@@ -9,5 +9,8 @@
   "deleteWarning": "一度削除すると戻せません。{category}を本当に削除しますか？",
   "cancel": "キャンセル",
   "delete": "削除",
-  "reorderCategories": "カテゴリーの並び替え"
+  "reorderCategories": "カテゴリーの並び替え",
+  "categoryExistsTitle": "カテゴリーは既に存在します",
+  "categoryExistsMessage": "{category} はすでにリストに存在します。",
+  "add":"追加"
 }
