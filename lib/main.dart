@@ -219,14 +219,15 @@ class _ShoppingListScreenState extends State<ShoppingListScreen>
               ],
             ),
             if (_isBannerAdReady)
-              Positioned(
-                bottom: MediaQuery.of(context).padding.bottom +
-                    _getNavigationBarHeight(context),
-                left: 0,
-                right: 0,
+              Align(
+                alignment: Alignment.bottomCenter,
                 child: Container(
-                  width: MediaQuery.of(context).size.width,
+                  width: _bannerAd.size.width.toDouble(),
                   height: _bannerAd.size.height.toDouble(),
+                  margin: EdgeInsets.only(
+                    bottom: MediaQuery.of(context).padding.bottom +
+                        _getNavigationBarHeight(context),
+                  ),
                   child: AdWidget(ad: _bannerAd),
                 ),
               ),
@@ -324,43 +325,52 @@ class _ShoppingListScreenState extends State<ShoppingListScreen>
 
   Widget _buildCategoryList(
       List<String> categoryList, List<String> targetList) {
-    return ReorderableListView(
-      onReorder: (int oldIndex, int newIndex) {
-        setState(() {
-          if (newIndex > oldIndex) {
-            newIndex -= 1;
-          }
-          final String item = categoryList.removeAt(oldIndex);
-          categoryList.insert(newIndex, item);
-          _saveData();
-        });
-      },
-      children: List.generate(categoryList.length, (index) {
-        final item = categoryList[index];
-        return ListTile(
-          key: Key('$item$index'), // 一意のキーを設定
-          title: Text(item),
-          trailing: IconButton(
-            icon: Icon(Icons.delete),
-            onPressed: () {
+    final bottomPadding = _isBannerAdReady
+        ? _bannerAd.size.height.toDouble() +
+            MediaQuery.of(context).padding.bottom +
+            _getNavigationBarHeight(context)
+        : 0.0;
+
+    return Padding(
+      padding: EdgeInsets.only(bottom: bottomPadding),
+      child: ReorderableListView(
+        onReorder: (int oldIndex, int newIndex) {
+          setState(() {
+            if (newIndex > oldIndex) {
+              newIndex -= 1;
+            }
+            final String item = categoryList.removeAt(oldIndex);
+            categoryList.insert(newIndex, item);
+            _saveData();
+          });
+        },
+        children: List.generate(categoryList.length, (index) {
+          final item = categoryList[index];
+          return ListTile(
+            key: Key('$item$index'), // 一意のキーを設定
+            title: Text(item),
+            trailing: IconButton(
+              icon: Icon(Icons.delete),
+              onPressed: () {
+                setState(() {
+                  categoryList.removeAt(index);
+                  _categoryNames.remove(item);
+                  _categoryLists.remove(item);
+                  _saveData();
+                });
+              },
+            ),
+            onTap: () {
               setState(() {
-                categoryList.removeAt(index);
-                _categoryNames.remove(item);
-                _categoryLists.remove(item);
-                _saveData();
+                if (!targetList.contains(item)) {
+                  targetList.add(item);
+                  _saveData();
+                }
               });
             },
-          ),
-          onTap: () {
-            setState(() {
-              if (!targetList.contains(item)) {
-                targetList.add(item);
-                _saveData();
-              }
-            });
-          },
-        );
-      }),
+          );
+        }),
+      ),
     );
   }
 
