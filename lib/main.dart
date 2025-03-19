@@ -273,6 +273,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen>
                   setState(() {
                     if (crossedOut) {
                       shoppingList.removeAt(index);
+                      _crossedOutItems.remove(item);
                     } else {
                       _crossedOutItems.add(item);
                     }
